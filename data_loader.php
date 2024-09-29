@@ -4,7 +4,8 @@ require __DIR__ . "/vendor/autoload.php";
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 include_once("currency_converter.php");
-include_once("db_products.php");
+// include_once("db_products.php");
+include_once("sqlite_db_products.php");
 
 function loadDataToDB() {
 

@@ -85,41 +85,47 @@
 
   async function loadData() {
     activateLoadingState("Loading...");
-    const responseData = await runAction("LOAD_DATA", {
-      page: 1,
-      last_item_id: -1,
-    });
-    deactivateLoadingState();
-    let table = document.querySelector("#productTbl");
-    let theadHTML = `
-      <thead>
-        <tr>
-          <th>Number</th>
-          <th>Name</th>
-          <th>Bottle size</th>
-          <th>Price EUR</th>
-          <th>Price GBP</th>
-          <th>Timestamp</th>
-          <th>Amount</th>
-          <th></th><th></th>
-        </tr>
-      </thead>`;
-    let tbodyHTML = "";
-    for (var i in responseData) {
-      tbodyHTML += `
-            <tr>
-              <td>${responseData[i].number}</td>
-              <td title='${responseData[i].name}'>${responseData[i].name}</td>
-              <td>${responseData[i].bottlesize}</td>
-              <td>${responseData[i].price}</td>
-              <td>${responseData[i].priceGBP}</td>
-              <td>${responseData[i].timestamp}</td>
-              <td id='order_${responseData[i].number}'>${responseData[i].orderamount}</td>
-              <td><button onclick="updateOrderAmount('${responseData[i].number}','ADD_AMOUNT')">Add</button></td>
-              <td><button onclick="updateOrderAmount('${responseData[i].number}','CLEAR_ORDER')">Clear</button></td>
-            </tr>`;
+    try {
+      const responseData = await runAction("LOAD_DATA", {
+        page: 1,
+        last_item_id: -1,
+      });
+
+      let table = document.querySelector("#productTbl");
+      let theadHTML = `
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Name</th>
+            <th>Bottle size</th>
+            <th>Price EUR</th>
+            <th>Price GBP</th>
+            <th>Timestamp</th>
+            <th>Amount</th>
+            <th></th><th></th>
+          </tr>
+        </thead>`;
+      let tbodyHTML = "";
+      for (var i in responseData) {
+        tbodyHTML += `
+              <tr>
+                <td>${responseData[i].number}</td>
+                <td title='${responseData[i].name}'>${responseData[i].name}</td>
+                <td>${responseData[i].bottlesize}</td>
+                <td>${responseData[i].price}</td>
+                <td>${responseData[i].priceGBP}</td>
+                <td>${responseData[i].timestamp}</td>
+                <td id='order_${responseData[i].number}'>${responseData[i].orderamount}</td>
+                <td><button onclick="updateOrderAmount('${responseData[i].number}','ADD_AMOUNT')">Add</button></td>
+                <td><button onclick="updateOrderAmount('${responseData[i].number}','CLEAR_ORDER')">Clear</button></td>
+              </tr>`;
+      }
+      table.innerHTML = `${theadHTML}<tbody>${tbodyHTML}</tbody>`;
+    } catch (e) {
+      console.error(e);
+    } finally {
+      deactivateLoadingState();
     }
-    table.innerHTML = `${theadHTML}<tbody>${tbodyHTML}</tbody>`;
   }
 
   async function removeProducts() {

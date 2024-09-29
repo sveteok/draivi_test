@@ -1,5 +1,6 @@
 <?php
-include_once("db_products.php");
+// include_once("db_products.php");
+include_once("sqlite_db_products.php");
 
 try {
     $contentType = trim($_SERVER["CONTENT_TYPE"] ?? ''); 
