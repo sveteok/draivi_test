@@ -10,8 +10,10 @@ $password = $_ENV["DATABASE_PASSWORD"];
 $hostname = $_ENV["DATABASE_HOSTNAME"];
 $databasename = $_ENV["DATABASE_NAME"]; 
 
+// Connect to MySql database
 $dsn = 'mysql:dbname=' . $databasename . ';host=' . $hostname;
 $db = new PDO($dsn, $username, $password);
 $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
 ?>

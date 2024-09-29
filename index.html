@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Draivi Backend test</title>
+    <style>
+      #loading.hide {
+        display: none;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: center;
+        text-wrap: nowrap;
+      }
+      th {
+        background: #ccc;
+      }
+      td:nth-of-type(2) {
+        text-align: left;
+        max-width: 300px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+      tr:nth-child(odd) {
+        background: #eee;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Draivi Backend test</h1>
+    <div>
+      <button type="button" id="loadProducts">List</button>
+      <button type="button" id="removeProducts">Empty</button>
+      <span id="loading" class="hide">Loading...</span>
+    </div>
+    <br />
+    <table id="productTbl" />
+  </body>
+</html>
+
+<script type="text/javascript" charset="UTF-8">
+  document.getElementById("loadProducts").addEventListener("click", loadData);
+  document
+    .getElementById("removeProducts")
+    .addEventListener("click", removeProducts);
+
+  function activateLoadingState(msg) {
+    document.getElementById("loading").classList.remove("hide");
+    document.getElementById("loading").innerHTML = msg;
+    document.getElementById("loadProducts").disabled = true;
+    document.getElementById("removeProducts").disabled = true;
+  }
+
+  function deactivateLoadingState(msg) {
+    document.getElementById("loading").className = "hide";
+    document.getElementById("loadProducts").disabled = false;
+    document.getElementById("removeProducts").disabled = false;
+  }
+
+  async function runAction(actionName, params) {
+    const data = params
+      ? { action: actionName, ...params }
+      : { action: actionName };
+
+    const response = await fetch("actions.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok || responseData.error) {
+      const error = new Error(
+        responseData.message || "Failed. Check your data."
+      );
+      throw error;
+    }
+    return responseData;
+  }
+
+  async function loadData() {
+    activateLoadingState("Loading...");
+    const responseData = await runAction("LOAD_DATA", {
+      page: 1,
+      last_item_id: -1,
+    });
+    deactivateLoadingState();
+    let table = document.querySelector("#productTbl");
+    let theadHTML = `
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th>Name</th>
+          <th>Bottle size</th>
+          <th>Price EUR</th>
+          <th>Price GBP</th>
+          <th>Timestamp</th>
+          <th>Amount</th>
+          <th></th><th></th>
+        </tr>
+      </thead>`;
+    let tbodyHTML = "";
+    for (var i in responseData) {
+      tbodyHTML += `
+            <tr>
+              <td>${responseData[i].number}</td>
+              <td title='${responseData[i].name}'>${responseData[i].name}</td>
+              <td>${responseData[i].bottlesize}</td>
+              <td>${responseData[i].price}</td>
+              <td>${responseData[i].priceGBP}</td>
+              <td>${responseData[i].timestamp}</td>
+              <td id='order_${responseData[i].number}'>${responseData[i].orderamount}</td>
+              <td><button onclick="updateOrderAmount('${responseData[i].number}','ADD_AMOUNT')">Add</button></td>
+              <td><button onclick="updateOrderAmount('${responseData[i].number}','CLEAR_ORDER')">Clear</button></td>
+            </tr>`;
+    }
+    table.innerHTML = `${theadHTML}<tbody>${tbodyHTML}</tbody>`;
+  }
+
+  async function removeProducts() {
+    activateLoadingState("Deleting...");
+    const responseData = await runAction("REMOVE_PRODUCTS_TABLE");
+    document.querySelector("#productTbl").innerHTML = "";
+    deactivateLoadingState();
+  }
+
+  async function updateOrderAmount(number, action) {
+    const order = await runAction(action, { number });
+    if (!order || !order.number) return;
+    document.querySelector("#order_" + order.number).innerHTML =
+      order.orderamount;
+  }
+</script>

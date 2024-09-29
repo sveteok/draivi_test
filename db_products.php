@@ -37,4 +37,43 @@ function insertProduct($data) {
         ':updated_priceGBP' => $data['priceGBP']
     ]);
 }
+
+function loadProducts() {
+    global $db;
+    $result = $db->query("SELECT * FROM products ORDER BY id");
+    $data = array();
+    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+        array_push($data, $row);
+    }
+    return $data;
+}
+
+function removeProductsTable() {
+    global $db;
+    $stmt = $db->prepare("DROP TABLE IF EXISTS products;");
+    $stmt -> execute();
+}
+
+function updateOrderAmount($number) {
+    global $db;
+    $stmt = $db->prepare("UPDATE products SET orderamount = orderamount + 1 WHERE number = :number");
+    $stmt->execute([':number' => $number]);
+}
+
+function clearOrderAmount($number) {
+    global $db;
+    $stmt = $db->prepare("UPDATE products SET orderamount = 0 WHERE number = :number");
+    $stmt->execute([':number' => $number]);
+}
+
+function getOrderAmount($number) {
+    global $db;
+    $stmt = $db->prepare("SELECT number, orderamount FROM products WHERE number = :number");
+    $stmt -> bindValue(':number', $number);
+    $stmt->execute();
+
+    $result  = $stmt->fetch();
+    return $result;
+}
+
 ?>
